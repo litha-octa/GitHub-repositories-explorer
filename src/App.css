@@ -8,27 +8,23 @@
   flex:1;
 }
 
-.title{
-font-family: 'Poppins';
-text-align: center;
-}
-
 .searchbar{
-  min-width: 300px;
-width: 30vw;
-background-color:rgb(212, 250, 255);
+  min-width: 450px;
+width: 40vw;
 padding: 10px;
 border-radius: 15px;
 display: flex;
 flex-direction: column;
 margin: 0 auto;
-margin-top: 30px;
 }
 
 .query{
-  font-size: 16px;
+  font-size: 25px;
   font-family: 'Poppins';
   margin-bottom: 10px;
+    padding: 10px;
+    width: 100%;
+  background-color: rgb(238, 231, 231);
 }
 
 .textResult{
@@ -36,4 +32,37 @@ margin-top: 30px;
     color: grey;
     font-size: medium;
 }
+.btn-submit{
+  width: 100%;
+  background-color: #5ca3dd;
+  padding: 10px;
+  color: white;
+  font-family: 'Poppins';
+  font-size: 20px;
+}
+.userList{
+  width: 100%;
+  background-color: rgb(238, 231, 231);
+  margin-top: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  padding: 5px;
+  text-transform: capitalize;
+}
+.repoList{
+  width: 80%;
+  margin-left: 20%;
+  background-color: lightgray;
+  margin-top: 5px  ;
+  padding: 10px;
+  min-height: 50px;
+  text-align: left;
+}
+.repoTitle{
+  font-weight: bold;
+  color: black;
+  text-transform: capitalize;
+}
+
 
