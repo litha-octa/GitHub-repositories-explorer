@@ -3,6 +3,8 @@ import { Box, Button, Center, Input, Text } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
+import { ClipLoader } from "react-spinners";
+import { token } from "./PersonalAccessToken";
 
 function App() {
   const [users, setUsers] = useState<any>();
@@ -32,15 +34,24 @@ function App() {
   const UserItem = ({ item }: any) => {
     const [isCollaps, setIsCollaps] = useState(true);
     const [repos, setRepos] = useState<any>();
+    const [loadingRepo, setLoadingRepo] = useState<boolean>(false);
+    console.log(loadingRepo);
     const _handlerGetRepo = async (url: any) => {
+      setLoadingRepo(true);
       if (url) {
         axios
-          .get(url)
+          .get(url, { headers: { Authorization: `Bearer ${token}` } })
           .then((res) => {
-            setRepos(res?.data);
+            setLoadingRepo(false);
+            if (res?.data?.length > 0) {
+              setRepos(res?.data);
+            } else {
+              return <Text>This user doesn't have repository</Text>;
+            }
           })
           .catch((err) => {
             console.log(err);
+            setLoadingRepo(false);
           });
       } else {
       }
@@ -65,10 +76,18 @@ function App() {
           <Box
             style={isCollaps ? { display: "none" } : { display: "contents" }}
           >
-            {repos ? (
+            <ClipLoader
+              color={"black"}
+              loading={loadingRepo}
+              size={70}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+            {
+              // repos ? (
               repos?.map((_item: any, index: number) => {
                 return (
-                  <Box key={index} className="repoList">
+                  <Box className="repoList" key={index}>
                     <Text className="repoTitle">
                       {_item.name || "Repo Name"}
                     </Text>
@@ -76,9 +95,10 @@ function App() {
                   </Box>
                 );
               })
-            ) : (
-              <Text>no repos</Text>
-            )}
+              // ) : (
+              //   <Text>no repos</Text>
+              // )
+            }
           </Box>
         </Box>
       </>
@@ -94,7 +114,9 @@ function App() {
     });
     if (query?.length > 0) {
       axios
-        .get(urlSearchUser(query))
+        .get(urlSearchUser(query), {
+          headers: { Authorization: `Bearer ${token}` },
+        })
         .then((res) => {
           setIsloading(false);
           if (res?.data?.total_count > 0) {
