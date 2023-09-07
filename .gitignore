@@ -6,7 +6,7 @@
 .pnp.js
 
 # token
-/src/PersonalAccessToken
+/src/PersonalAccessToken.ts
 
 # testing
 /coverage
