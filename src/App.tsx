@@ -4,7 +4,7 @@ import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
 import { ClipLoader } from "react-spinners";
-import { token } from "./PersonalAccessToken";
+// import { token } from "./PersonalAccessToken";
 
 function App() {
   const [users, setUsers] = useState<any>();
