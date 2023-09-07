@@ -28,60 +28,64 @@ function App() {
       </Box>
     );
   };
-  const UserItem = () => {
+
+  const UserItem = ({ item }: any) => {
     const [isCollaps, setIsCollaps] = useState(true);
     const [repos, setRepos] = useState<any>();
-    const _handlerGetRepo = async (x: any) => {
-      let data = await fetch(x || "");
-      let json = await data.json();
-      setRepos(json);
-      console.log(json);
+    const _handlerGetRepo = async (url: any) => {
+      if (url) {
+        axios
+          .get(url)
+          .then((res) => {
+            setRepos(res?.data);
+          })
+          .catch((err) => {
+            console.log(err);
+          });
+      } else {
+      }
     };
     return (
       <>
-        {users?.map((item: any, index: number) => {
-          return (
-            <Box width={"100%"} key={index}>
-              <Box
-                className="userList"
-                onClick={() => {
-                  setIsCollaps(!isCollaps);
-                  _handlerGetRepo(item.repos_url);
-                }}
-              >
-                <Text fontSize={"25px"}>{item?.login || "username"}</Text>
-                {isCollaps ? (
-                  <ChevronDownIcon boxSize={30} />
-                ) : (
-                  <ChevronUpIcon boxSize={30} />
-                )}
-              </Box>
-              <Box
-                style={
-                  isCollaps ? { display: "none" } : { display: "contents" }
-                }
-              >
-                {isLoading ? <Spinner /> : null}
-                {repos ? (
-                  repos?.map((_item: any, index: number) => {
-                    return (
-                      <Box key={index} className="repoList">
-                        <Text className="repoTitle">{_item.name}</Text>
-                        <Text>{_item.description || "No description"}</Text>
-                      </Box>
-                    );
-                  })
-                ) : (
-                  <Text>no repos</Text>
-                )}
-              </Box>
-            </Box>
-          );
-        })}
+        <Box width={"100%"}>
+          <Box
+            className="userList"
+            onClick={() => {
+              setIsCollaps(!isCollaps);
+              _handlerGetRepo(item?.repos_url);
+            }}
+          >
+            <Text fontSize={"25px"}>{item?.login || "Username"}</Text>
+            {isCollaps ? (
+              <ChevronDownIcon boxSize={30} />
+            ) : (
+              <ChevronUpIcon boxSize={30} />
+            )}
+          </Box>
+          <Box
+            style={isCollaps ? { display: "none" } : { display: "contents" }}
+          >
+            {repos ? (
+              repos?.map((_item: any, index: number) => {
+                return (
+                  <Box key={index} className="repoList">
+                    <Text className="repoTitle">
+                      {_item.name || "Repo Name"}
+                    </Text>
+                    <Text>{_item.description || "No description"}</Text>
+                  </Box>
+                );
+              })
+            ) : (
+              <Text>no repos</Text>
+            )}
+          </Box>
+        </Box>
       </>
     );
   };
   const _handlerSearch = async () => {
+    setIsloading(!isLoading);
     setUsers([]);
     setIsError({
       ...isError,
@@ -92,8 +96,7 @@ function App() {
       axios
         .get(urlSearchUser(query))
         .then((res) => {
-          setIsloading(true);
-          console.log(res.data);
+          setIsloading(false);
           if (res?.data?.total_count > 0) {
             setIsError({
               ...isError,
@@ -108,10 +111,6 @@ function App() {
               message: `Username "${query}" not found`,
             });
           }
-
-          setTimeout(() => {
-            setIsloading(false);
-          }, 3000);
         })
         .catch((err) => {
           setIsError({
@@ -121,6 +120,7 @@ function App() {
           });
         });
     } else {
+      setIsloading(false);
       setIsError({
         ...isError,
         show: true,
@@ -138,11 +138,19 @@ function App() {
           onChange={_handlerQuery}
           className="query"
         />
-        <Button onClick={() => _handlerSearch()} className="btn-submit">
+        <Button
+          isLoading={isLoading}
+          onClick={() => _handlerSearch()}
+          className="btn-submit"
+        >
           Search
         </Button>
         <HandlerError />
-        <UserItem />
+        {users
+          ? users?.map((item: any, index: number) => {
+              return <UserItem item={item} key={index} />;
+            })
+          : null}
       </Center>
     </Box>
   );
