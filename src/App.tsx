@@ -40,7 +40,7 @@ function App() {
       setLoadingRepo(true);
       if (url) {
         axios
-          .get(url, { headers: { Authorization: `Bearer ${token}` } })
+          .get(url)
           .then((res) => {
             setLoadingRepo(false);
             if (res?.data?.length > 0) {
@@ -114,9 +114,7 @@ function App() {
     });
     if (query?.length > 0) {
       axios
-        .get(urlSearchUser(query), {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .get(urlSearchUser(query))
         .then((res) => {
           setIsloading(false);
           if (res?.data?.total_count > 0) {
