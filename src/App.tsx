@@ -74,7 +74,6 @@ function App() {
             setLoadingRepo(false);
             setErrorRepo({ ...errorRepo, show: true, message: err.message });
           });
-        // console.log(res);
       } else {
         setErrorRepo({ ...errorRepo, show: true, message: "Can't find repo" });
       }
@@ -149,7 +148,6 @@ function App() {
               message: `Showing username for "${query}"`,
             });
             setUsers(res?.data?.items);
-            // setUsers(res?.data?.items?.slice(0, 5));
           } else {
             setIsError({
               ...isError,
@@ -179,11 +177,7 @@ function App() {
     <Box className="body">
       <Center className="searchbar">
         <Input
-          // borderColor={isError?.show ? "red" : "transparent"}
-          // variant="flushed"
-          // focusBorderColor="lime"
           isInvalid
-          // errorBorderColor="red.300"
           placeholder="Enter username"
           value={query}
           onChange={_handlerQuery}
