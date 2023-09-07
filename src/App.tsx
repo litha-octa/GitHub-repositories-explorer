@@ -4,7 +4,6 @@ import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
 import { ClipLoader } from "react-spinners";
-// import { token } from "./PersonalAccessToken";
 
 function App() {
   const [users, setUsers] = useState<any>();
@@ -15,7 +14,7 @@ function App() {
     message: "",
   });
   const urlSearchUser = (keyword: string) =>
-    `https://api.github.com/search/users?q=${keyword}`;
+    `https://api.github.com/search/users?q=${keyword}&per_page=5`;
 
   const _handlerQuery = (event: any) => {
     setQuery(event.target.value);
@@ -26,7 +25,7 @@ function App() {
       <Box
         style={!isError?.show ? { display: "none" } : { display: "contents" }}
       >
-        <Text>{isError?.message}</Text>
+        <Text style={{ marginTop: 10 }}>{isError?.message}</Text>
       </Box>
     );
   };
@@ -35,7 +34,24 @@ function App() {
     const [isCollaps, setIsCollaps] = useState(true);
     const [repos, setRepos] = useState<any>();
     const [loadingRepo, setLoadingRepo] = useState<boolean>(false);
-    console.log(loadingRepo);
+    const [errorRepo, setErrorRepo] = useState<any>({
+      show: false,
+      message: "",
+    });
+
+    console.log(errorRepo);
+    const ErrorHandlerRepo = () => {
+      return (
+        <Box style={errorRepo ? { display: "contents" } : { display: "none" }}>
+          <Box className="repoList">
+            <Text as="i">
+              {errorRepo?.message || "This user doesn't have any repository"}
+            </Text>
+          </Box>
+        </Box>
+      );
+    };
+
     const _handlerGetRepo = async (url: any) => {
       setLoadingRepo(true);
       if (url) {
@@ -46,14 +62,21 @@ function App() {
             if (res?.data?.length > 0) {
               setRepos(res?.data);
             } else {
-              return <Text>This user doesn't have repository</Text>;
+              setErrorRepo({
+                ...errorRepo,
+                show: true,
+                message: "This user doesn't have any repository",
+              });
             }
           })
           .catch((err) => {
             console.log(err);
             setLoadingRepo(false);
+            setErrorRepo({ ...errorRepo, show: true, message: err.message });
           });
+        // console.log(res);
       } else {
+        setErrorRepo({ ...errorRepo, show: true, message: "Can't find repo" });
       }
     };
     return (
@@ -83,22 +106,24 @@ function App() {
               aria-label="Loading Spinner"
               data-testid="loader"
             />
-            {
-              // repos ? (
+            {repos ? (
               repos?.map((_item: any, index: number) => {
                 return (
                   <Box className="repoList" key={index}>
                     <Text className="repoTitle">
                       {_item.name || "Repo Name"}
                     </Text>
-                    <Text>{_item.description || "No description"}</Text>
+                    {_item.description ? (
+                      <Text>{_item.description}</Text>
+                    ) : (
+                      <Text as="i">No description</Text>
+                    )}
                   </Box>
                 );
               })
-              // ) : (
-              //   <Text>no repos</Text>
-              // )
-            }
+            ) : loadingRepo ? null : (
+              <ErrorHandlerRepo />
+            )}
           </Box>
         </Box>
       </>
@@ -121,9 +146,10 @@ function App() {
             setIsError({
               ...isError,
               show: true,
-              message: `Showing users for "${query}"`,
+              message: `Showing username for "${query}"`,
             });
-            setUsers(res?.data?.items?.slice(0, 5));
+            setUsers(res?.data?.items);
+            // setUsers(res?.data?.items?.slice(0, 5));
           } else {
             setIsError({
               ...isError,
@@ -153,6 +179,11 @@ function App() {
     <Box className="body">
       <Center className="searchbar">
         <Input
+          // borderColor={isError?.show ? "red" : "transparent"}
+          // variant="flushed"
+          // focusBorderColor="lime"
+          isInvalid
+          // errorBorderColor="red.300"
           placeholder="Enter username"
           value={query}
           onChange={_handlerQuery}

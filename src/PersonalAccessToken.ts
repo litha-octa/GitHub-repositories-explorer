@@ -1,2 +1,0 @@
-export const token =
-  "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";

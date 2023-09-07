@@ -1,5 +1,6 @@
 *{
   margin: 0px;
+    font-family: 'Poppins';
 }
 .body {
   text-align: center;
@@ -19,15 +20,15 @@ margin: 0 auto;
 
 .query{
   font-size: 25px;
-  font-family: 'Poppins';
   margin-bottom: 10px;
     padding: 10px;
     width: 100%;
   background-color: rgb(238, 231, 231);
+  border: 2px;
+  border-color: pink;
 }
 
 .textResult{
-    font-family: 'Poppins';
     color: grey;
     font-size: medium;
 }
@@ -36,7 +37,6 @@ margin: 0 auto;
   background-color: #5ca3dd;
   padding: 10px;
   color: white;
-  font-family: 'Poppins';
   font-size: 20px;
 }
 .userList{
