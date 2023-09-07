@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, Center, Input, Spinner, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Input, Text } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
