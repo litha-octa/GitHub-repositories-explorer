@@ -1,12 +1,14 @@
 # Github User
+=======
 Searching user and user's repo in github
 =======
+
 # Using
 -React
 -Typescript
 -Axios
 
-#API Doc
+# API Doc
 https://docs.github.com/en/rest
 
 
