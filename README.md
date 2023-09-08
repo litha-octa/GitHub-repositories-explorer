@@ -1,4 +1,4 @@
-# GitHub repositories explorer
+# GitHub Repositories Explorer
 Searching user and user's repo in github
 
 ## Using
