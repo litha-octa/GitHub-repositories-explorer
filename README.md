@@ -11,7 +11,7 @@ Searching user and user's repo in github
 https://docs.github.com/en/rest
 
 ## Live Demo
-https://gitsearchusername.netlify.app/
+https://githubrepositoriesexplorer.netlify.app/
 
 ## Clone App
 * git clone https://github.com/litha-octa/SearchUser.git
