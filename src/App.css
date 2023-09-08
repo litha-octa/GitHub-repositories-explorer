@@ -7,7 +7,6 @@
   padding: 16px;
   flex:1;
 }
-
 .searchbar{
   min-width: 350px;
 width: 40vw;
@@ -17,7 +16,6 @@ display: flex;
 flex-direction: column;
 margin: 0 auto;
 }
-
 .query{
   font-size: 25px;
   margin-bottom: 10px;
@@ -27,7 +25,6 @@ margin: 0 auto;
   border: 2px;
   border-color: pink;
 }
-
 .textResult{
     color: grey;
     font-size: medium;
@@ -63,5 +60,7 @@ margin: 0 auto;
   color: black;
   text-transform: capitalize;
 }
-
+.errorText{
+  margin-top: 10px;
+}
 

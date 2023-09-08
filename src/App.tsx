@@ -22,10 +22,8 @@ function App() {
 
   const HandlerError = () => {
     return (
-      <Box
-        style={!isError?.show ? { display: "none" } : { display: "contents" }}
-      >
-        <Text style={{ marginTop: 10 }}>{isError?.message}</Text>
+      <Box display={!isError?.show ? "none" : "contents"}>
+        <Text className="errorText">{isError?.message}</Text>
       </Box>
     );
   };
@@ -42,7 +40,7 @@ function App() {
     console.log(errorRepo);
     const ErrorHandlerRepo = () => {
       return (
-        <Box style={errorRepo ? { display: "contents" } : { display: "none" }}>
+        <Box display={errorRepo ? "contents" : "none"}>
           <Box className="repoList">
             <Text as="i">
               {errorRepo?.message || "This user doesn't have any repository"}
@@ -95,9 +93,7 @@ function App() {
               <ChevronUpIcon boxSize={30} />
             )}
           </Box>
-          <Box
-            style={isCollaps ? { display: "none" } : { display: "contents" }}
-          >
+          <Box display={isCollaps ? "none" : "contents"}>
             <ClipLoader
               color={"black"}
               loading={loadingRepo}
