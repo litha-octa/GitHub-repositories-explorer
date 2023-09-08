@@ -1,5 +1,4 @@
-# Github User
-
+# GitHub repositories explorer
 Searching user and user's repo in github
 
 ## Using
