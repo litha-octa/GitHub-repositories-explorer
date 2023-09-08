@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Box, Button, Center, Input, Text } from "@chakra-ui/react";
-import { ChevronDownIcon, ChevronUpIcon } from "@chakra-ui/icons";
+import { ChevronDownIcon, ChevronUpIcon, StarIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
 import { ClipLoader } from "react-spinners";
@@ -105,11 +105,17 @@ function App() {
               repos?.map((_item: any, index: number) => {
                 return (
                   <Box className="repoList" key={index}>
-                    <Text className="repoTitle">
-                      {_item.name || "Repo Name"}
-                    </Text>
+                    <Box className="Hstack">
+                      <Text className="repoTitle">
+                        {_item.name || "Repo Name"}
+                      </Text>
+                      <Text className="repoTitle">
+                        {_item?.stargazers_count || 0}
+                        <StarIcon boxSize={20} marginLeft={5} />
+                      </Text>
+                    </Box>
                     {_item.description ? (
-                      <Text>{_item.description}</Text>
+                      <Text>{_item?.description}</Text>
                     ) : (
                       <Text as="i">No description</Text>
                     )}

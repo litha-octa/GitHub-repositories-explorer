@@ -63,4 +63,9 @@ margin: 0 auto;
 .errorText{
   margin-top: 10px;
 }
+.Hstack{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
 
