@@ -1,17 +1,24 @@
 # Github User
-=======
+
 Searching user and user's repo in github
-=======
 
-# Using
--React
--Typescript
--Axios
+## Using
+* React
+* Typescript
+* Chakra-ui
+* Axios
 
-# API Doc
+## API Doc
 https://docs.github.com/en/rest
 
+## Live Demo
+https://gitsearchusername.netlify.app/
 
+## Clone App
+* git clone https://github.com/litha-octa/SearchUser.git
+* npm install
+
+After the clone process is complete, then run it using available script
 ## Available Scripts
 
 In the project directory, you can run:
