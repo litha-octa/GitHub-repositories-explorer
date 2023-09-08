@@ -1,10 +1,14 @@
-<<<<<<< HEAD
-# GitSearch
-Searching username github
+# Github User
+Searching user and user's repo in github
 =======
-# Getting Started with Create React App
+# Using
+-React
+-Typescript
+-Axios
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+#API Doc
+https://docs.github.com/en/rest
+
 
 ## Available Scripts
 
