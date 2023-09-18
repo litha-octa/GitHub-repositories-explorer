@@ -68,4 +68,10 @@ margin: 0 auto;
   flex-direction: row;
   justify-content: space-between;
 }
-
+.linkToRepo{
+  color: #2368a1;
+  font-size: 16px;
+  margin-top: 15px;
+  font-style: italic;
+  font-weight: normal;
+}

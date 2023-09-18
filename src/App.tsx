@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Box, Button, Center, Input, Text } from "@chakra-ui/react";
+import { Box, Button, Center, Input, Link, Text } from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon, StarIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
@@ -36,8 +36,6 @@ function App() {
       show: false,
       message: "",
     });
-
-    console.log(errorRepo);
     const ErrorHandlerRepo = () => {
       return (
         <Box display={errorRepo ? "contents" : "none"}>
@@ -115,7 +113,12 @@ function App() {
                       </Text>
                     </Box>
                     {_item.description ? (
-                      <Text>{_item?.description}</Text>
+                      <Box>
+                        <Text>{_item?.description}</Text>
+                        <Link className="linkToRepo" href={_item?.html_url}>
+                          Go to Repo
+                        </Link>
+                      </Box>
                     ) : (
                       <Text as="i">No description</Text>
                     )}
