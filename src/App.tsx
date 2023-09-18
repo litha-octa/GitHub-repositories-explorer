@@ -180,6 +180,9 @@ function App() {
 
   return (
     <Box className="body">
+      <Text fontSize={"4xl"} className="title">
+        Github Repositories Explorer
+      </Text>
       <Center className="searchbar">
         <Input
           isInvalid

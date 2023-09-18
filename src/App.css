@@ -75,3 +75,9 @@ margin: 0 auto;
   font-style: italic;
   font-weight: normal;
 }
+.title{
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 25px;
+}
