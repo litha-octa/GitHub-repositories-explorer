@@ -87,3 +87,14 @@ margin: 0 auto;
   border-radius: 20px;
   margin-right: 20px;
 }
+.language{
+  background-color: #2368a1;
+  color: azure;
+  font-size: 14px;
+  padding-left: 10px;
+  padding-right: 10px;
+  border-radius: 15px;
+  text-align: center;
+  min-width: 50px;
+  max-width: 100px;
+}

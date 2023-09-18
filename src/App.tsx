@@ -37,7 +37,6 @@ function App() {
   };
 
   const UserItem = ({ item }: any) => {
-    console.log(item);
     const [isCollaps, setIsCollaps] = useState(true);
     const [repos, setRepos] = useState<any>();
     const [loadingRepo, setLoadingRepo] = useState<boolean>(false);
@@ -111,6 +110,7 @@ function App() {
             />
             {repos ? (
               repos?.map((_item: any, index: number) => {
+                console.log(_item);
                 return (
                   <Box className="repoList" key={index}>
                     <Box className="Hstack">
@@ -125,13 +125,16 @@ function App() {
                     {_item.description ? (
                       <Box>
                         <Text>{_item?.description}</Text>
-                        <Link className="linkToRepo" href={_item?.html_url}>
-                          Go to Repo
-                        </Link>
                       </Box>
                     ) : (
                       <Text as="i">No description</Text>
                     )}
+                    <Link className="linkToRepo" href={_item?.html_url}>
+                      <Text> Go to Repo </Text>
+                    </Link>
+                    {/* <Box maxW={"70px"}> */}
+                    <Text className="language">{_item?.language}</Text>
+                    {/* </Box> */}
                   </Box>
                 );
               })
