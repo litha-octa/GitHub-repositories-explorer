@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Box, Button, Center, Input, Link, Text } from "@chakra-ui/react";
+import {
+  Box,
+  Button,
+  Center,
+  Input,
+  Link,
+  Text,
+  Image,
+} from "@chakra-ui/react";
 import { ChevronDownIcon, ChevronUpIcon, StarIcon } from "@chakra-ui/icons";
 import axios from "axios";
 import "./App.css";
@@ -29,6 +37,7 @@ function App() {
   };
 
   const UserItem = ({ item }: any) => {
+    console.log(item);
     const [isCollaps, setIsCollaps] = useState(true);
     const [repos, setRepos] = useState<any>();
     const [loadingRepo, setLoadingRepo] = useState<boolean>(false);
@@ -84,6 +93,7 @@ function App() {
               _handlerGetRepo(item?.repos_url);
             }}
           >
+            <Image src={item?.avatar_url} className="avatar" />
             <Text fontSize={"25px"}>{item?.login || "Username"}</Text>
             {isCollaps ? (
               <ChevronDownIcon boxSize={30} />
