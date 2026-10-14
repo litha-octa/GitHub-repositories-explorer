@@ -1,42 +1,42 @@
 # Changelog
 
-## 0.1.0 — RepoCheckup (15 Oktober 2026)
+## 0.1.0 — RepoCheckup (October 15, 2026)
 
-Aplikasi lama **GitHub Repositories Explorer** (cari user lalu lihat daftar repo-nya) diganti seluruhnya dengan **RepoCheckup**: alat untuk mengecek apakah sebuah library masih dirawat dan aman dipakai.
+The old **GitHub Repositories Explorer** app (search for a user, then browse their repos) has been fully replaced by **RepoCheckup**, a tool for checking whether a library is still maintained and safe to use.
 
-### Fitur baru
+### New features
 
-- **Laporan kesehatan repo.** Menampilkan status (Aktif, Melambat, Tidak aktif, atau Diarsipkan), skor 0–100 beserta alasan per faktor, dan 8 metrik. Di bawah setiap metrik tertulis endpoint GitHub asalnya.
-- **Input fleksibel.** Bisa `owner/repo`, URL GitHub, atau nama package npm, termasuk yang ber-scope seperti `@tanstack/react-query`. Nama package diubah menjadi repo GitHub lewat npm registry.
-- **Mode bandingkan.** Sampai 4 library ditampilkan berdampingan dalam satu tabel.
-- **Link yang bisa dibagikan.** Daftar repo yang sedang dilihat disimpan di URL, misalnya `?repos=pmndrs/zustand,reduxjs/redux`, dan bisa disalin dengan tombol "Salin link".
-- **State loading dan error.** Skeleton saat memuat, lalu pesan khusus untuk repo tidak ditemukan, package npm tidak ditemukan, package tanpa repo GitHub, input tidak valid, dan batas request GitHub tercapai (beserta jam reset-nya).
+- **Repo health report.** Shows a status (Active, Slowing, Inactive, or Archived), a 0–100 score with the reason behind each factor, and 8 metrics. Each metric lists the GitHub endpoint it came from.
+- **Flexible input.** Accepts `owner/repo`, a GitHub URL, or an npm package name, including scoped ones like `@tanstack/react-query`. Package names are resolved to a GitHub repo through the npm registry.
+- **Compare mode.** Up to 4 libraries side by side in one table.
+- **Shareable links.** The repos you are viewing are stored in the URL, for example `?repos=pmndrs/zustand,reduxjs/redux`, and the "Copy link" button copies it.
+- **Loading and error states.** A skeleton while loading, plus specific messages for a repo that doesn't exist, an npm package that doesn't exist, a package with no GitHub repo, invalid input, and a hit GitHub rate limit (with the reset time).
 
 ### Backend
 
-- **Proxy Netlify Function** (`/api/report`). Token GitHub hanya ada di server, tidak pernah dikirim ke browser.
-- **Respons 202 ditangani.** Endpoint `/stats/*` dicoba ulang. Kalau GitHub masih menghitung, metrik ditandai `pending` dan frontend mengambil ulang otomatis tiap 5 detik.
-- **Caching.** Hasil disimpan 6 jam di CDN Netlify dan di memori function. Respons yang masih `pending` tidak di-cache.
-- **Lebih sedikit request.** Median waktu issue ditutup diambil dari Search API `is:issue is:closed`, sekaligus dengan jumlah issue tertutup. Sampelnya hanya berisi issue (tanpa PR) dan totalnya 8 request per laporan.
+- **Netlify Function proxy** (`/api/report`). The GitHub token stays on the server and is never sent to the browser.
+- **Handles 202 responses.** The `/stats/*` endpoints are retried. If GitHub is still computing, the metric is marked `pending` and the frontend refetches automatically every 5 seconds.
+- **Caching.** Results are cached for 6 hours on the Netlify CDN and in the function's memory. Responses that are still `pending` are not cached.
+- **Fewer requests.** The median time to close an issue now comes from the Search API `is:issue is:closed`, in the same call that returns the closed issue count. The sample contains only issues (no PRs), and a report takes 8 requests in total.
 
-### Skor
+### Score
 
-- Empat faktor berbobot: commit terakhir (35), median issue ditutup (25), rilis terakhir (20), dan lisensi (20).
-- Faktor yang datanya tidak ada tidak ikut dihitung, bukan dianggap nol.
-- Semua ambang ada di satu file, `src/lib/scoreConfig.ts`.
-- Star dan fork hanya ditampilkan sebagai info, tidak masuk skor.
+- Four weighted factors: last commit (35), median time to close an issue (25), latest release (20), and license (20).
+- Factors with no data are left out instead of counting as zero.
+- All thresholds live in one file, `src/lib/scoreConfig.ts`.
+- Stars and forks are shown for reference only and don't affect the score.
 
-### Perubahan teknis
+### Technical changes
 
-- Pindah dari Create React App ke **Vite**. Saat `npm run dev`, Vite juga melayani `/api/report`, jadi tidak perlu `netlify-cli`.
-- Tambah **TanStack Query** untuk fetching dan cache di browser.
-- Hapus `axios`, `react-spinners`, `web-vitals`, dan `react-scripts`.
-- Tambah **Vitest + React Testing Library + MSW**: 73 test untuk fungsi skor, parser input, proxy (dengan GitHub/npm yang di-mock), dan UI.
-- Tambah `netlify.toml` dan `.env.example`.
-- Script baru: `npm run dev`, `npm test`, `npm run test:run`, `npm run build`, dan `npm run typecheck`.
+- Moved from Create React App to **Vite**. During `npm run dev`, Vite also serves `/api/report`, so `netlify-cli` isn't needed.
+- Added **TanStack Query** for fetching and browser-side caching.
+- Removed `axios`, `react-spinners`, `web-vitals`, and `react-scripts`.
+- Added **Vitest + React Testing Library + MSW**: 73 tests covering the score function, the input parser, the proxy (against mocked GitHub/npm), and the UI.
+- Added `netlify.toml` and `.env.example`.
+- New scripts: `npm run dev`, `npm test`, `npm run test:run`, `npm run build`, and `npm run typecheck`.
 
-### Cara upgrade
+### Upgrading
 
-1. Jalankan `npm install`, karena dependensinya banyak berubah.
-2. Salin `.env.example` ke `.env` lalu isi `GITHUB_TOKEN`.
-3. Di Netlify, tambahkan environment variable `GITHUB_TOKEN`. Folder publish sekarang `dist`, bukan `build` (sudah diatur di `netlify.toml`).
+1. Run `npm install`, since many dependencies changed.
+2. Copy `.env.example` to `.env` and set `GITHUB_TOKEN`.
+3. On Netlify, add a `GITHUB_TOKEN` environment variable. The publish folder is now `dist` instead of `build` (already set in `netlify.toml`).

@@ -19,7 +19,7 @@ function dedupe(items: string[]): string[] {
     });
 }
 
-/** `?repos=pmndrs/zustand,reduxjs/redux` — "/" dan "@" dibiarkan apa adanya supaya link mudah dibaca. */
+/** `?repos=pmndrs/zustand,reduxjs/redux` — "/" and "@" are left as-is so the link stays readable. */
 function toSearch(repos: string[]): string {
   if (repos.length === 0) return "";
   const encoded = repos.map((r) =>
@@ -28,7 +28,7 @@ function toSearch(repos: string[]): string {
   return `?repos=${encoded.join(",")}`;
 }
 
-/** Daftar repo yang sedang dilihat, disimpan di URL supaya bisa dibagikan. */
+/** The repos being viewed, stored in the URL so the page can be shared. */
 export function useUrlRepos() {
   const [repos, setState] = useState<string[]>(readRepos);
 

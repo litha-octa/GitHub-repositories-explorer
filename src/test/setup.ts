@@ -1,6 +1,6 @@
 import "@testing-library/jest-dom/vitest";
 
-// jsdom belum punya matchMedia; Chakra memakainya untuk color mode sistem.
+// jsdom has no matchMedia; Chakra uses it for the system color mode.
 if (typeof window !== "undefined" && !window.matchMedia) {
   window.matchMedia = (query: string) =>
     ({

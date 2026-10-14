@@ -28,7 +28,7 @@ export function median(values: number[]): number | null {
   return sorted.length % 2 ? sorted[mid] : (sorted[mid - 1] + sorted[mid]) / 2;
 }
 
-/** Kumpulkan semua metrik satu repo. Setiap metrik berasal dari satu endpoint GitHub REST API. */
+/** Collect every metric for one repo. Each metric comes from a single GitHub REST API endpoint. */
 export async function buildReport(input: string, deps: ReportDeps): Promise<RepoMetrics> {
   const { github } = deps;
   const now = deps.now?.() ?? new Date();
@@ -37,7 +37,7 @@ export async function buildReport(input: string, deps: ReportDeps): Promise<Repo
   if (parsed.kind === "invalid") {
     throw new ReportError(
       "INVALID_INPUT",
-      "Masukkan owner/repo, URL GitHub, atau nama package npm",
+      "Enter owner/repo, a GitHub URL, or an npm package name",
       400,
     );
   }
@@ -45,13 +45,13 @@ export async function buildReport(input: string, deps: ReportDeps): Promise<Repo
 
   const repoRes = await github.get(`/repos/${ref.owner}/${ref.repo}`);
   if (repoRes.status === 404) {
-    throw new ReportError("NOT_FOUND", `Repo ${ref.owner}/${ref.repo} tidak ditemukan`, 404);
+    throw new ReportError("NOT_FOUND", `Repo ${ref.owner}/${ref.repo} not found`, 404);
   }
   if (repoRes.status !== 200) {
-    throw new ReportError("UPSTREAM", `GitHub membalas ${repoRes.status}`, 502);
+    throw new ReportError("UPSTREAM", `GitHub responded with ${repoRes.status}`, 502);
   }
   const repo = repoRes.data;
-  // Pakai nama kanonik dari GitHub (repo yang di-rename otomatis di-redirect).
+  // Use the canonical name from GitHub (renamed repos are redirected automatically).
   const full: string = repo.full_name;
   const searchIssues = (state: "open" | "closed", perPage: number) =>
     github.get<{ total_count: number; items: IssueItem[] }>(
@@ -62,13 +62,13 @@ export async function buildReport(input: string, deps: ReportDeps): Promise<Repo
 
   const [commits, release, activity, openSearch, closedSearch, community, contributors] =
     await Promise.all([
-      github.get(`/repos/${full}/commits?per_page=1`), // 409 kalau repo kosong
-      github.get(`/repos/${full}/releases/latest`), // 404 kalau belum pernah rilis
+      github.get(`/repos/${full}/commits?per_page=1`), // 409 if the repo is empty
+      github.get(`/repos/${full}/releases/latest`), // 404 if it was never released
       github.getStats<Array<{ total: number }>>(`/repos/${full}/stats/commit_activity`),
       searchIssues("open", 1),
-      // Satu panggilan untuk jumlah issue tertutup sekaligus sampel median waktu tutup.
-      // Lebih baik dari /issues?state=closed yang ikut memuat PR: di repo aktif,
-      // 30 item terakhir bisa hampir semuanya PR sehingga sampel issue tinggal 1–5.
+      // One call returns both the closed issue count and the sample for the median close time.
+      // Better than /issues?state=closed, which also returns PRs: on an active repo
+      // the 30 latest items can be almost all PRs, leaving a sample of only 1–5 issues.
       searchIssues("closed", 50),
       github.get(`/repos/${full}/community/profile`),
       github.getStats<ContributorStats[]>(`/repos/${full}/stats/contributors`),

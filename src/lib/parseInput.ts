@@ -20,9 +20,9 @@ function clean(owner: string, repo: string): RepoRef | null {
 }
 
 /**
- * Ambil owner/repo dari berbagai bentuk penulisan repo GitHub:
- * `owner/repo`, `github:owner/repo`, URL https, `git+https://…git`, `git@github.com:…`.
- * Mengembalikan null untuk repo yang bukan di GitHub.
+ * Extract owner/repo from the many ways a GitHub repo can be written:
+ * `owner/repo`, `github:owner/repo`, https URLs, `git+https://…git`, `git@github.com:…`.
+ * Returns null for repos that are not on GitHub.
  */
 export function parseGitHubRepo(value: string): RepoRef | null {
   const text = value.trim();
@@ -30,11 +30,11 @@ export function parseGitHubRepo(value: string): RepoRef | null {
   return match ? clean(match[1], match[2]) : null;
 }
 
-/** Tebak apa yang diketik pengguna: repo GitHub atau nama package npm. */
+/** Work out what the user typed: a GitHub repo or an npm package name. */
 export function parseInput(raw: string): ParsedInput {
   const text = raw.trim();
   if (!text) return { kind: "invalid" };
-  // Package npm ber-scope (`@scope/name`) juga mengandung "/", jadi cek dulu.
+  // Scoped npm packages (`@scope/name`) also contain "/", so check for them first.
   if (!text.startsWith("@")) {
     const repo = parseGitHubRepo(text);
     if (repo) return { kind: "github", ...repo };

@@ -24,15 +24,15 @@ export default function App() {
             RepoCheckup
           </Heading>
           <Text color="gray.500" mt={1}>
-            Library ini masih dirawat dan aman dipakai? Jawabannya dalam 5 detik.
+            Is this library still maintained and safe to use? Find out in 5 seconds.
           </Text>
         </Box>
 
         <Box>
           <RepoInput
             key={single ?? repos.join(",")}
-            label="Repo atau package"
-            buttonLabel="Cek"
+            label="Repo or package"
+            buttonLabel="Check"
             size="lg"
             defaultValue={single ?? ""}
             onSubmit={(value) => setRepos([value])}
@@ -42,7 +42,7 @@ export default function App() {
             <Wrap mt={3} spacing={2} align="center">
               <WrapItem>
                 <Text fontSize="sm" color="gray.500">
-                  Coba:
+                  Try:
                 </Text>
               </WrapItem>
               {EXAMPLES.map((example) => (
@@ -59,7 +59,7 @@ export default function App() {
                   colorScheme="blue"
                   onClick={() => setRepos(["zustand", "reduxjs/redux", "jotai"])}
                 >
-                  Bandingkan zustand vs redux vs jotai
+                  Compare zustand vs redux vs jotai
                 </Button>
               </WrapItem>
             </Wrap>

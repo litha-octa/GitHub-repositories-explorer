@@ -46,7 +46,7 @@ export function ReportView({ input, onCompare }: Props) {
 
       <Box>
         <Heading as="h3" size="sm" mb={3}>
-          Rincian metrik
+          Metric breakdown
         </Heading>
         <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>
           {METRICS.map((metric) => (
@@ -70,19 +70,19 @@ export function ReportView({ input, onCompare }: Props) {
       {comparing ? (
         <Box>
           <Text fontWeight="semibold" mb={2}>
-            Bandingkan {data.fullName} dengan…
+            Compare {data.fullName} with…
           </Text>
-          <RepoInput label="Library pembanding" buttonLabel="Tambah" onSubmit={onCompare} autoFocus />
+          <RepoInput label="Library to compare" buttonLabel="Add" onSubmit={onCompare} autoFocus />
         </Box>
       ) : (
         <Flex gap={3} wrap="wrap" justify="space-between" align="center">
           <Text fontSize="sm" color="gray.500">
-            Data diambil {new Date(data.fetchedAt).toLocaleString("id-ID")}
+            Data fetched {new Date(data.fetchedAt).toLocaleString("en-US")}
           </Text>
           <HStack>
             <ShareButton />
             <Button size="sm" colorScheme="blue" leftIcon={<AddIcon />} onClick={() => setComparing(true)}>
-              Bandingkan
+              Compare
             </Button>
           </HStack>
         </Flex>
@@ -144,7 +144,7 @@ function HealthSummary({ health }: { health: HealthReport }) {
               <Text flex={1}>{factor.reason}</Text>
               <Text fontSize="sm" color="gray.500" flexShrink={0}>
                 {factor.value === null
-                  ? "tidak dihitung"
+                  ? "not scored"
                   : `${Math.round(factor.weight * factor.value)}/${factor.weight}`}
               </Text>
             </HStack>
@@ -157,7 +157,7 @@ function HealthSummary({ health }: { health: HealthReport }) {
 
 function ReportSkeleton() {
   return (
-    <Stack spacing={4} aria-busy="true" aria-label="Memuat laporan">
+    <Stack spacing={4} aria-busy="true" aria-label="Loading report">
       <Skeleton height="48px" />
       <Skeleton height="140px" />
       <SimpleGrid columns={{ base: 1, md: 2 }} spacing={3}>

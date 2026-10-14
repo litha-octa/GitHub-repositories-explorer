@@ -11,6 +11,7 @@ import {
 } from "@chakra-ui/react";
 import { CheckIcon, CloseIcon, LinkIcon, MinusIcon, QuestionOutlineIcon } from "@chakra-ui/icons";
 import { ApiError } from "../api";
+import { plural } from "../lib/format";
 import { STATUS_LABEL, type RepoStatus } from "../lib/score";
 import { STATUS_COLOR } from "../theme";
 
@@ -30,12 +31,12 @@ export function StatusBadge({ status, size = "md" }: { status: RepoStatus; size?
   );
 }
 
-/** ✓ penuh, ~ sebagian, ✗ nol, ? data tidak tersedia. */
+/** ✓ full, ~ partial, ✗ zero, ? no data. */
 export function FactorMark({ value }: { value: number | null }) {
-  if (value === null) return <Icon as={QuestionOutlineIcon} color="gray.400" aria-label="Tidak ada data" />;
-  if (value === 1) return <Icon as={CheckIcon} color="green.500" aria-label="Lolos" />;
-  if (value === 0) return <Icon as={CloseIcon} boxSize={2.5} color="red.500" aria-label="Tidak lolos" />;
-  return <Icon as={MinusIcon} color="orange.400" aria-label="Sebagian" />;
+  if (value === null) return <Icon as={QuestionOutlineIcon} color="gray.400" aria-label="No data" />;
+  if (value === 1) return <Icon as={CheckIcon} color="green.500" aria-label="Pass" />;
+  if (value === 0) return <Icon as={CloseIcon} boxSize={2.5} color="red.500" aria-label="Fail" />;
+  return <Icon as={MinusIcon} color="orange.400" aria-label="Partial" />;
 }
 
 export function Sparkline({ values, height = 32 }: { values: number[]; height?: number }) {
@@ -51,7 +52,7 @@ export function Sparkline({ values, height = 32 }: { values: number[]; height?: 
       viewBox={`0 0 ${width} ${height}`}
       color="blue.500"
       role="img"
-      aria-label={`Commit per minggu: ${values.join(", ")}`}
+      aria-label={`Commits per week: ${values.join(", ")}`}
     >
       {values.map((v, i) => {
         const h = v === 0 ? 1.5 : Math.max(3, (v / max) * height);
@@ -66,7 +67,7 @@ export function Sparkline({ values, height = 32 }: { values: number[]; height?: 
             fill="currentColor"
             opacity={v === 0 ? 0.3 : 1}
           >
-            <title>{`${values.length - i} minggu lalu: ${v} commit`}</title>
+            <title>{`${plural(values.length - i, "week")} ago: ${plural(v, "commit")}`}</title>
           </rect>
         );
       })}
@@ -75,13 +76,13 @@ export function Sparkline({ values, height = 32 }: { values: number[]; height?: 
 }
 
 const ERROR_TITLE: Record<ApiError["code"], string> = {
-  INVALID_INPUT: "Input tidak dikenali",
-  NOT_FOUND: "Repo tidak ditemukan",
-  NPM_NOT_FOUND: "Package npm tidak ditemukan",
-  NPM_NO_REPO: "Repo GitHub tidak diketahui",
-  RATE_LIMITED: "Batas request GitHub tercapai",
-  UPSTREAM: "Gagal mengambil data",
-  NETWORK: "Tidak bisa terhubung",
+  INVALID_INPUT: "Unrecognized input",
+  NOT_FOUND: "Repo not found",
+  NPM_NOT_FOUND: "npm package not found",
+  NPM_NO_REPO: "No GitHub repo found",
+  RATE_LIMITED: "GitHub rate limit reached",
+  UPSTREAM: "Couldn't fetch data",
+  NETWORK: "Can't connect",
 };
 
 export function ErrorState({ error }: { error: Error }) {
@@ -96,7 +97,7 @@ export function ErrorState({ error }: { error: Error }) {
         <AlertDescription display="block">
           {error.message}
           {resetAt &&
-            `. Coba lagi sekitar pukul ${resetAt.toLocaleTimeString("id-ID", {
+            `. Try again around ${resetAt.toLocaleTimeString("en-US", {
               hour: "2-digit",
               minute: "2-digit",
             })}.`}
@@ -110,7 +111,7 @@ export function ShareButton() {
   const { onCopy, hasCopied } = useClipboard(window.location.href);
   return (
     <Button size="sm" variant="outline" leftIcon={<LinkIcon />} onClick={onCopy}>
-      {hasCopied ? "Link disalin" : "Salin link"}
+      {hasCopied ? "Link copied" : "Copy link"}
     </Button>
   );
 }
