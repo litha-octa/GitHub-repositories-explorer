@@ -3,8 +3,8 @@ import { defineConfig, loadEnv, type Plugin } from "vite";
 import react from "@vitejs/plugin-react";
 import { handleReportRequest } from "./server/handler";
 
-// Saat `npm run dev`, jalankan handler Netlify Function yang sama langsung di
-// dev server Vite, supaya tidak perlu netlify-cli untuk development lokal.
+// During `npm run dev`, run the same Netlify Function handler directly inside the
+// Vite dev server, so local development does not need netlify-cli.
 function localApi(token: string | undefined): Plugin {
   return {
     name: "local-api",

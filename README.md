@@ -1,91 +1,91 @@
 # RepoCheckup
 
-Cek dalam 5 detik apakah sebuah library masih dirawat dan aman dipakai.
+Find out in 5 seconds whether a library is still maintained and safe to use.
 
-Masukkan `owner/repo`, URL GitHub, atau nama package npm (misalnya `zustand`). Hasilnya satu laporan kesehatan: status (**Aktif**, **Melambat**, **Tidak aktif**, atau **Diarsipkan**), skor 0–100 beserta alasannya, dan rincian metrik. Laporan bisa dibandingkan dengan 1–3 library lain, dan link-nya bisa dibagikan:
+Enter `owner/repo`, a GitHub URL, or an npm package name (for example `zustand`). You get a single health report: a status (**Active**, **Slowing**, **Inactive**, or **Archived**), a 0–100 score with the reasons behind it, and a breakdown of each metric. You can compare the report with 1–3 other libraries and share the link:
 
 ```
 /?repos=pmndrs/zustand,reduxjs/redux,jotai
 ```
 
-## Cara skor dihitung
+## How the score works
 
-Skor tidak dibuat sebagai kotak hitam. Ada empat faktor, masing-masing dengan bobot:
+The score is not a black box. It uses four weighted factors:
 
-| Faktor | Bobot | Nilai penuh | Setengah | Nol |
+| Factor | Weight | Full | Half | Zero |
 | --- | --- | --- | --- | --- |
-| Commit terakhir | 35 | < 30 hari | < 6 bulan | > 1 tahun (6 bulan–1 tahun: ¼) |
-| Median issue ditutup | 25 | < 7 hari | < 30 hari | ≥ 30 hari |
-| Rilis terakhir | 20 | ≤ 6 bulan | – | > 6 bulan atau belum pernah |
-| Lisensi | 20 | Ada | – | Tidak ada |
+| Last commit | 35 | < 30 days | < 6 months | > 1 year (6 months–1 year: ¼) |
+| Median time to close an issue | 25 | < 7 days | < 30 days | ≥ 30 days |
+| Latest release | 20 | ≤ 6 months | – | > 6 months, or never released |
+| License | 20 | Present | – | Missing |
 
-- **Skor** = jumlah poin ÷ jumlah bobot faktor yang datanya tersedia × 100. Kalau repo belum punya issue tertutup, faktor itu tidak ikut dihitung (bukan dianggap nol).
-- **Status:** Aktif kalau skor ≥ 70, Melambat kalau ≥ 40, selain itu Tidak aktif. Repo yang commit terakhirnya lebih dari 1 tahun lalu selalu Tidak aktif.
-- **Diarsipkan:** repo dengan `archived: true` langsung berstatus Diarsipkan tanpa dihitung.
-- **Star dan fork** hanya ditampilkan sebagai info. Banyak library ber-star tinggi yang sebenarnya sudah tidak dirawat.
+- **Score:** points earned ÷ total weight of the factors that have data × 100. If a repo has no closed issues yet, that factor is left out instead of counting as zero.
+- **Status:** Active if the score is ≥ 70, Slowing if it is ≥ 40, Inactive otherwise. A repo whose last commit is more than a year old is always Inactive.
+- **Archived:** a repo with `archived: true` is marked Archived right away, without a score.
+- **Stars and forks** are shown for reference only. Plenty of highly starred libraries are no longer maintained.
 
-Semua ambang ada di [`src/lib/scoreConfig.ts`](src/lib/scoreConfig.ts), logikanya di [`src/lib/score.ts`](src/lib/score.ts) (fungsi murni, diuji di `score.test.ts`).
+All thresholds live in [`src/lib/scoreConfig.ts`](src/lib/scoreConfig.ts). The logic is in [`src/lib/score.ts`](src/lib/score.ts), a pure function tested in `score.test.ts`.
 
-## Sumber data
+## Data sources
 
-Setiap angka bisa dijelaskan asalnya. Laporan juga menampilkan endpoint ini di bawah setiap metrik.
+Every number can be traced back to where it came from. The report also shows the endpoint under each metric.
 
-| Metrik | Endpoint GitHub |
+| Metric | GitHub endpoint |
 | --- | --- |
-| Info repo, status arsip, star/fork | `GET /repos/{owner}/{repo}` |
-| Commit terakhir | `GET /repos/{owner}/{repo}/commits?per_page=1` |
-| Rilis terakhir (404 = belum pernah rilis) | `GET /repos/{owner}/{repo}/releases/latest` |
-| Commit 12 minggu terakhir | `GET /repos/{owner}/{repo}/stats/commit_activity` |
-| Jumlah issue terbuka | Search API `repo:{owner}/{repo} is:issue is:open` |
-| Jumlah issue tertutup + median waktu tutup | Search API `repo:{owner}/{repo} is:issue is:closed` (50 issue terakhir) |
+| Repo info, archived status, stars/forks | `GET /repos/{owner}/{repo}` |
+| Last commit | `GET /repos/{owner}/{repo}/commits?per_page=1` |
+| Latest release (404 = never released) | `GET /repos/{owner}/{repo}/releases/latest` |
+| Commits over the last 12 weeks | `GET /repos/{owner}/{repo}/stats/commit_activity` |
+| Open issue count | Search API `repo:{owner}/{repo} is:issue is:open` |
+| Closed issue count + median time to close | Search API `repo:{owner}/{repo} is:issue is:closed` (last 50 issues) |
 | README, LICENSE, CONTRIBUTING | `GET /repos/{owner}/{repo}/community/profile` |
-| Kontributor aktif 90 hari | `GET /repos/{owner}/{repo}/stats/contributors` |
-| Nama package npm → repo | `registry.npmjs.org/{package}/latest`, field `repository.url` |
+| Active contributors in the last 90 days | `GET /repos/{owner}/{repo}/stats/contributors` |
+| npm package name → repo | `registry.npmjs.org/{package}/latest`, `repository.url` field |
 
-Median waktu tutup diambil dari Search API, bukan `/issues?state=closed`, karena endpoint itu juga memuat PR. Di repo yang aktif, 30 item terakhirnya bisa hampir semuanya PR sehingga sampel issue tinggal 1–5.
+The median time to close comes from the Search API rather than `/issues?state=closed`, because that endpoint also returns pull requests. On an active repo, its 30 most recent items can be almost all PRs, which leaves a sample of only 1–5 issues.
 
-## Arsitektur
+## Architecture
 
 ```
 Browser (React + TanStack Query)
    │  GET /api/report?q=zustand
    ▼
-Netlify Function  ── token GitHub hanya ada di sini
-   ├─► registry.npmjs.org   (nama package → owner/repo)
-   └─► api.github.com       (8 request per laporan, 7 di antaranya paralel)
+Netlify Function  ── the GitHub token lives only here
+   ├─► registry.npmjs.org   (package name → owner/repo)
+   └─► api.github.com       (8 requests per report, 7 of them in parallel)
 ```
 
-- **Proxy** ([`netlify/functions/report.ts`](netlify/functions/report.ts) → [`server/`](server/)): browser tidak pernah memegang token.
-- **Respons 202:** endpoint `/stats/*` membalas 202 selama GitHub masih menghitung. Proxy mencoba ulang dua kali (±4 detik). Kalau masih 202, metrik ditandai `pending`, respons tidak di-cache, dan frontend mengambil ulang tiap 5 detik.
-- **Rate limit:** 403/429 dengan `x-ratelimit-remaining: 0` diubah menjadi error `RATE_LIMITED` beserta jam reset-nya.
-- **Caching:** respons sukses di-cache 6 jam di CDN Netlify (`Netlify-CDN-Cache-Control`) dan di memori function, supaya library populer tidak dihitung ulang. TanStack Query juga menyimpan hasil di browser.
+- **Proxy** ([`netlify/functions/report.ts`](netlify/functions/report.ts) → [`server/`](server/)): the browser never sees the token.
+- **202 responses:** the `/stats/*` endpoints return 202 while GitHub is still computing the data. The proxy retries twice (about 4 seconds). If it still gets 202, the metric is marked `pending`, the response is not cached, and the frontend refetches every 5 seconds.
+- **Rate limits:** a 403/429 with `x-ratelimit-remaining: 0` becomes a `RATE_LIMITED` error that includes the reset time.
+- **Caching:** successful responses are cached for 6 hours on the Netlify CDN (`Netlify-CDN-Cache-Control`) and in the function's memory, so popular libraries are not recomputed. TanStack Query also keeps results in the browser.
 
-## Menjalankan secara lokal
+## Running locally
 
 ```bash
 npm install
-cp .env.example .env    # isi GITHUB_TOKEN (opsional, tapi tanpa token batasnya 60 request/jam)
-npm run dev             # http://localhost:5173, /api/report dilayani langsung oleh Vite
+cp .env.example .env    # set GITHUB_TOKEN (optional, but without it the limit is 60 requests/hour)
+npm run dev             # http://localhost:5173, /api/report is served by Vite itself
 ```
 
-`npm run dev` menjalankan handler yang sama dengan Netlify Function lewat middleware Vite, jadi tidak perlu `netlify-cli`.
+`npm run dev` runs the same handler as the Netlify Function through Vite middleware, so you don't need `netlify-cli`.
 
-| Script | Fungsi |
+| Script | What it does |
 | --- | --- |
-| `npm run dev` | Dev server + API lokal |
-| `npm test` | Vitest (watch mode) |
-| `npm run test:run` | Vitest sekali jalan |
-| `npm run build` | Typecheck + build produksi ke `dist/` |
+| `npm run dev` | Dev server + local API |
+| `npm test` | Vitest in watch mode |
+| `npm run test:run` | Vitest, single run |
+| `npm run build` | Type check + production build to `dist/` |
 
-Test memakai Vitest + React Testing Library + MSW: unit test skor dan parser input, test proxy dengan GitHub/npm yang di-mock (202, 404, rate limit, cache), dan test UI.
+Tests use Vitest, React Testing Library, and MSW. They cover unit tests for the score and the input parser, proxy tests against mocked GitHub/npm (202, 404, rate limits, cache), and UI tests.
 
-## Deploy ke Netlify
+## Deploying to Netlify
 
-1. Hubungkan repo ini ke Netlify. Build command dan folder publish sudah diatur di `netlify.toml`.
-2. Tambahkan environment variable `GITHUB_TOKEN`: personal access token tanpa scope apa pun sudah cukup untuk repo publik.
+1. Connect this repo to Netlify. The build command and publish folder are already set in `netlify.toml`.
+2. Add a `GITHUB_TOKEN` environment variable. A personal access token with no scopes is enough for public repos.
 
 ## Stack
 
 React 18, TypeScript, Vite, Chakra UI, TanStack Query, Netlify Functions, Vitest, React Testing Library, MSW.
 
-Riwayat perubahan ada di [CHANGELOG.md](CHANGELOG.md).
+See [CHANGELOG.md](CHANGELOG.md) for the release history.

@@ -1,6 +1,6 @@
 import type { ApiErrorCode } from "../src/lib/types";
 
-/** Error yang sudah punya kode & status HTTP untuk dikirim ke browser. */
+/** An error that already carries the code & HTTP status to send to the browser. */
 export class ReportError extends Error {
   constructor(
     public code: ApiErrorCode,
@@ -23,7 +23,7 @@ export interface GitHubClientOptions {
   token?: string;
   fetch?: typeof fetch;
   sleep?: (ms: number) => Promise<void>;
-  /** Jeda sebelum mencoba ulang endpoint stats yang membalas 202. */
+  /** Delays before retrying a stats endpoint that returned 202. */
   statsRetryDelays?: number[];
 }
 
@@ -34,7 +34,7 @@ export function createGitHubClient({
   token,
   fetch: fetchImpl = fetch,
   sleep = defaultSleep,
-  // Total ±4 detik: cukup untuk kebanyakan repo, tetap di bawah batas waktu Netlify Function.
+  // About 4 seconds in total: enough for most repos, and still under the Netlify Function time limit.
   statsRetryDelays = [1500, 2500],
 }: GitHubClientOptions = {}) {
   const headers: Record<string, string> = {
@@ -54,13 +54,13 @@ export function createGitHubClient({
       const reset = res.headers.get("x-ratelimit-reset");
       throw new ReportError(
         "RATE_LIMITED",
-        "Batas request GitHub API tercapai",
+        "GitHub API rate limit reached",
         429,
         reset ? new Date(Number(reset) * 1000).toISOString() : undefined,
       );
     }
     if (res.status >= 500) {
-      throw new ReportError("UPSTREAM", `GitHub membalas ${res.status}`, 502);
+      throw new ReportError("UPSTREAM", `GitHub responded with ${res.status}`, 502);
     }
 
     const data = res.status === 202 || res.status === 204 ? null : await res.json().catch(() => null);
@@ -68,8 +68,8 @@ export function createGitHubClient({
   }
 
   /**
-   * Endpoint /stats/* membalas 202 selama GitHub masih menghitung di belakang layar.
-   * Coba ulang beberapa kali; kalau masih 202, laporkan sebagai "pending".
+   * The /stats/* endpoints return 202 while GitHub is still computing in the background.
+   * Retry a few times; if it is still 202, report the metric as "pending".
    */
   async function getStats<T = any>(path: string): Promise<StatsResult<T>> {
     for (let attempt = 0; ; attempt++) {

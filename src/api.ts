@@ -20,7 +20,7 @@ export async function fetchReport(input: string, signal?: AbortSignal): Promise<
     res = await fetch(url, { signal });
   } catch (err) {
     if (signal?.aborted) throw err;
-    throw new ApiError("NETWORK", "Tidak bisa terhubung ke server");
+    throw new ApiError("NETWORK", "Can't reach the server");
   }
 
   const body = (await res.json().catch(() => null)) as RepoMetrics | ApiErrorBody | null;
@@ -28,7 +28,7 @@ export async function fetchReport(input: string, signal?: AbortSignal): Promise<
     const error = body && "error" in body ? body.error : null;
     throw new ApiError(
       error?.code ?? "UPSTREAM",
-      error?.message ?? `Server membalas ${res.status}`,
+      error?.message ?? `Server responded with ${res.status}`,
       error?.resetAt,
     );
   }
@@ -44,10 +44,10 @@ export function reportQuery(input: string) {
     queryKey: ["report", input.trim().toLowerCase()],
     queryFn: ({ signal }) => fetchReport(input, signal),
     staleTime: SIX_HOURS,
-    // Error yang jelas (404, rate limit, input salah) tidak perlu dicoba ulang.
+    // Clear-cut errors (404, rate limit, bad input) are not worth retrying.
     retry: (count, err) =>
       err instanceof ApiError && (err.code === "UPSTREAM" || err.code === "NETWORK") && count < 1,
-    // Kalau GitHub masih menghitung statistik (202), ambil ulang sebentar lagi.
+    // If GitHub is still computing stats (202), refetch shortly.
     refetchInterval: (query) =>
       query.state.data?.pending.length && query.state.dataUpdateCount <= MAX_PENDING_REFETCHES
         ? PENDING_REFETCH_MS

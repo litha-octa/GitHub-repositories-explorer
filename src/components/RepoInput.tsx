@@ -6,7 +6,7 @@ interface Props {
   onSubmit: (value: string) => void;
   defaultValue?: string;
   buttonLabel: string;
-  /** Label aksesibel untuk input. */
+  /** Accessible label for the input. */
   label: string;
   placeholder?: string;
   size?: "md" | "lg";
@@ -18,7 +18,7 @@ export function RepoInput({
   defaultValue = "",
   buttonLabel,
   label,
-  placeholder = "owner/repo, URL GitHub, atau nama package npm",
+  placeholder = "owner/repo, GitHub URL, or npm package name",
   size = "md",
   autoFocus,
 }: Props) {
@@ -55,7 +55,7 @@ export function RepoInput({
             {buttonLabel}
           </Button>
         </HStack>
-        <FormErrorMessage>Contoh: pmndrs/zustand, https://github.com/vercel/swr, atau zustand</FormErrorMessage>
+        <FormErrorMessage>Examples: pmndrs/zustand, https://github.com/vercel/swr, or zustand</FormErrorMessage>
       </FormControl>
     </form>
   );

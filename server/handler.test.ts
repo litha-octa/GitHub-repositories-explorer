@@ -9,7 +9,7 @@ const NOW = new Date("2026-10-15T00:00:00Z");
 const day = 24 * 60 * 60 * 1000;
 const iso = (daysAgo: number) => new Date(NOW.getTime() - daysAgo * day).toISOString();
 
-/** Handler GitHub untuk satu repo sehat; test bisa menimpa endpoint tertentu dengan server.use(). */
+/** GitHub handlers for one healthy repo; a test can override specific endpoints with server.use(). */
 function githubHandlers(full = "pmndrs/zustand") {
   const weekSec = Math.floor((NOW.getTime() - 10 * day) / 1000);
   return [
@@ -40,9 +40,9 @@ function githubHandlers(full = "pmndrs/zustand") {
       return HttpResponse.json({
         total_count: 300,
         items: [
-          { created_at: iso(10), closed_at: iso(9) }, // 1 hari
-          { created_at: iso(10), closed_at: iso(7) }, // 3 hari
-          { created_at: iso(20), closed_at: iso(10) }, // 10 hari
+          { created_at: iso(10), closed_at: iso(9) }, // 1 day
+          { created_at: iso(10), closed_at: iso(7) }, // 3 days
+          { created_at: iso(20), closed_at: iso(10) }, // 10 days
         ],
       });
     }),
@@ -51,9 +51,9 @@ function githubHandlers(full = "pmndrs/zustand") {
     ),
     http.get(`${GH}/repos/${full}/stats/contributors`, () =>
       HttpResponse.json([
-        { weeks: [{ w: weekSec, c: 3 }] }, // aktif 10 hari lalu
-        { weeks: [{ w: weekSec - 200 * 86400, c: 5 }] }, // terakhir 210 hari lalu
-        { weeks: [{ w: weekSec, c: 0 }] }, // tidak ada commit
+        { weeks: [{ w: weekSec, c: 3 }] }, // active 10 days ago
+        { weeks: [{ w: weekSec - 200 * 86400, c: 5 }] }, // last active 210 days ago
+        { weeks: [{ w: weekSec, c: 0 }] }, // no commits
       ]),
     ),
   ];
@@ -78,7 +78,7 @@ async function request(q: string) {
 }
 
 describe("GET /api/report", () => {
-  it("mengumpulkan semua metrik dari GitHub", async () => {
+  it("collects every metric from GitHub", async () => {
     const { res, body } = await request("pmndrs/zustand");
     expect(res.status).toBe(200);
     const m = body as RepoMetrics;
@@ -98,7 +98,7 @@ describe("GET /api/report", () => {
     });
   });
 
-  it("mengirim token ke GitHub, tidak pernah ke browser", async () => {
+  it("sends the token to GitHub, never to the browser", async () => {
     let auth: string | null = null;
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand`, ({ request }) => {
@@ -111,12 +111,12 @@ describe("GET /api/report", () => {
     expect(JSON.stringify(body)).not.toContain("test-token");
   });
 
-  it("men-set header cache 6 jam untuk CDN", async () => {
+  it("sets a 6-hour CDN cache header", async () => {
     const { res } = await request("pmndrs/zustand");
     expect(res.headers.get("netlify-cdn-cache-control")).toContain("s-maxage=21600");
   });
 
-  it("memakai cache memori untuk request berikutnya", async () => {
+  it("serves the next request from the memory cache", async () => {
     let calls = 0;
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand`, () => {
@@ -130,7 +130,7 @@ describe("GET /api/report", () => {
     expect(res.headers.get("x-cache")).toBe("HIT");
   });
 
-  it("mengubah nama package npm menjadi repo GitHub", async () => {
+  it("resolves an npm package name to a GitHub repo", async () => {
     server.use(
       http.get("https://registry.npmjs.org/zustand/latest", () =>
         HttpResponse.json({ repository: { url: "git+https://github.com/pmndrs/zustand.git" } }),
@@ -141,7 +141,7 @@ describe("GET /api/report", () => {
     expect(body).toMatchObject({ fullName: "pmndrs/zustand", npmPackage: "zustand" });
   });
 
-  it("menangani package npm ber-scope", async () => {
+  it("handles scoped npm packages", async () => {
     server.use(
       ...githubHandlers("TanStack/query"),
       http.get("https://registry.npmjs.org/@tanstack%2Freact-query/latest", () =>
@@ -152,18 +152,18 @@ describe("GET /api/report", () => {
     expect(body).toMatchObject({ fullName: "TanStack/query", npmPackage: "@tanstack/react-query" });
   });
 
-  it("404 untuk package npm yang tidak ada", async () => {
+  it("returns 404 for an npm package that does not exist", async () => {
     server.use(
-      http.get("https://registry.npmjs.org/tidak-ada-pkg/latest", () =>
+      http.get("https://registry.npmjs.org/missing-pkg/latest", () =>
         HttpResponse.json({}, { status: 404 }),
       ),
     );
-    const { res, body } = await request("tidak-ada-pkg");
+    const { res, body } = await request("missing-pkg");
     expect(res.status).toBe(404);
     expect(body.error.code).toBe("NPM_NOT_FOUND");
   });
 
-  it("404 untuk package tanpa repo GitHub", async () => {
+  it("returns 404 for a package without a GitHub repo", async () => {
     server.use(
       http.get("https://registry.npmjs.org/gitlab-pkg/latest", () =>
         HttpResponse.json({ repository: "https://gitlab.com/x/y" }),
@@ -173,7 +173,7 @@ describe("GET /api/report", () => {
     expect(body.error.code).toBe("NPM_NO_REPO");
   });
 
-  it("404 untuk repo yang tidak ada", async () => {
+  it("returns 404 for a repo that does not exist", async () => {
     server.use(
       http.get(`${GH}/repos/ghost/nothing`, () =>
         HttpResponse.json({ message: "Not Found" }, { status: 404 }),
@@ -184,13 +184,13 @@ describe("GET /api/report", () => {
     expect(body.error.code).toBe("NOT_FOUND");
   });
 
-  it("400 untuk input yang tidak valid", async () => {
-    const { res, body } = await request("bukan input valid");
+  it("returns 400 for invalid input", async () => {
+    const { res, body } = await request("not valid input");
     expect(res.status).toBe(400);
     expect(body.error.code).toBe("INVALID_INPUT");
   });
 
-  it("menganggap 404 di releases/latest sebagai belum pernah rilis", async () => {
+  it("treats a 404 from releases/latest as never released", async () => {
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand/releases/latest`, () =>
         HttpResponse.json({ message: "Not Found" }, { status: 404 }),
@@ -200,7 +200,7 @@ describe("GET /api/report", () => {
     expect(body.latestRelease).toBeNull();
   });
 
-  it("mencoba ulang endpoint stats yang membalas 202", async () => {
+  it("retries stats endpoints that return 202", async () => {
     let calls = 0;
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand/stats/commit_activity`, () => {
@@ -216,7 +216,7 @@ describe("GET /api/report", () => {
     expect(body.pending).toEqual([]);
   });
 
-  it("menandai metrik pending dan tidak meng-cache kalau 202 terus", async () => {
+  it("marks metrics as pending and skips caching when 202 persists", async () => {
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand/stats/contributors`, () =>
         HttpResponse.json({}, { status: 202 }),
@@ -228,7 +228,7 @@ describe("GET /api/report", () => {
     expect(res.headers.get("cache-control")).toBe("no-store");
   });
 
-  it("429 dengan waktu reset saat rate limit GitHub habis", async () => {
+  it("returns 429 with the reset time when the GitHub rate limit runs out", async () => {
     const reset = Math.floor(NOW.getTime() / 1000) + 600;
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand`, () =>
@@ -249,7 +249,7 @@ describe("GET /api/report", () => {
     });
   });
 
-  it("langsung meneruskan status archived dari GitHub", async () => {
+  it("passes the archived flag through from GitHub", async () => {
     server.use(
       http.get(`${GH}/repos/pmndrs/zustand`, () =>
         HttpResponse.json({ full_name: "pmndrs/zustand", archived: true }),

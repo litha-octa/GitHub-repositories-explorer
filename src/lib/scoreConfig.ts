@@ -13,26 +13,26 @@ export interface ScoreConfig {
 }
 
 /**
- * Semua ambang skor di satu tempat supaya mudah disesuaikan.
- * Bobot dijumlahkan hanya untuk faktor yang datanya tersedia, lalu dinormalisasi ke 0–100.
+ * Every score threshold in one place so it is easy to tune.
+ * Weights are summed only for factors that have data, then normalized to 0–100.
  */
 export const SCORE_CONFIG: ScoreConfig = {
   lastCommit: {
     weight: 35,
-    fullBelowDays: 30, // < 30 hari → nilai penuh
-    halfBelowDays: 182, // < 6 bulan → setengah
-    zeroAboveDays: 365, // > 1 tahun → nol
-    /** Nilai untuk 6 bulan – 1 tahun (celah yang tidak diatur di rencana awal). */
+    fullBelowDays: 30, // < 30 days → full
+    halfBelowDays: 182, // < 6 months → half
+    zeroAboveDays: 365, // > 1 year → zero
+    /** Value for 6 months – 1 year (a gap the original plan left open). */
     betweenValue: 0.25,
   },
   issueClose: {
     weight: 25,
-    fullBelowDays: 7, // median < 7 hari → penuh
-    halfBelowDays: 30, // < 30 hari → setengah, ≥ 30 hari → nol
+    fullBelowDays: 7, // median < 7 days → full
+    halfBelowDays: 30, // < 30 days → half, ≥ 30 days → zero
   },
   release: {
     weight: 20,
-    fullWithinDays: 182, // ≤ 6 bulan → penuh; lebih lama atau belum pernah → nol
+    fullWithinDays: 182, // ≤ 6 months → full; older or never released → zero
   },
   license: {
     weight: 20,
@@ -40,7 +40,7 @@ export const SCORE_CONFIG: ScoreConfig = {
   status: {
     activeMinScore: 70,
     slowingMinScore: 40,
-    /** Commit terakhir lebih lama dari ini → Tidak aktif, berapa pun skornya. */
+    /** Last commit older than this → Inactive, whatever the score. */
     inactiveAfterDays: 365,
   },
 };

@@ -1,13 +1,13 @@
 import type { ReactNode } from "react";
 import { HStack, Text } from "@chakra-ui/react";
-import { daysBetween, formatAgo, formatDuration, formatNumber } from "../lib/format";
+import { daysBetween, formatAgo, formatDuration, formatNumber, plural } from "../lib/format";
 import type { RepoMetrics } from "../lib/types";
 import { FactorMark, Sparkline } from "./bits";
 
 export interface MetricDef {
   key: string;
   label: string;
-  /** Endpoint GitHub asal angka ini, supaya setiap angka bisa dijelaskan. */
+  /** The GitHub endpoint this number comes from, so every number can be explained. */
   source: string;
   render: (m: RepoMetrics, now: Date) => ReactNode;
 }
@@ -18,19 +18,19 @@ const Muted = ({ children }: { children: ReactNode }) => (
   </Text>
 );
 
-const Pending = () => <Muted>Sedang dihitung GitHub…</Muted>;
+const Pending = () => <Muted>Still being computed by GitHub…</Muted>;
 
 export const METRICS: MetricDef[] = [
   {
     key: "lastCommit",
-    label: "Commit terakhir",
+    label: "Last commit",
     source: "GET /repos/{owner}/{repo}/commits?per_page=1",
     render: (m, now) =>
-      m.lastCommitAt ? formatAgo(daysBetween(m.lastCommitAt, now)) : <Muted>Belum ada commit</Muted>,
+      m.lastCommitAt ? formatAgo(daysBetween(m.lastCommitAt, now)) : <Muted>No commits yet</Muted>,
   },
   {
     key: "release",
-    label: "Rilis terakhir",
+    label: "Latest release",
     source: "GET /repos/{owner}/{repo}/releases/latest",
     render: (m, now) =>
       m.latestRelease ? (
@@ -39,60 +39,61 @@ export const METRICS: MetricDef[] = [
           <Muted>({m.latestRelease.tag})</Muted>
         </>
       ) : (
-        <Muted>Belum pernah rilis</Muted>
+        <Muted>Never released</Muted>
       ),
   },
   {
     key: "weeklyCommits",
-    label: "Commit 12 minggu terakhir",
+    label: "Commits, last 12 weeks",
     source: "GET /repos/{owner}/{repo}/stats/commit_activity",
     render: (m) =>
       m.weeklyCommits ? (
         <HStack spacing={3} align="end">
           <Sparkline values={m.weeklyCommits} />
-          <Text as="span">{formatNumber(m.weeklyCommits.reduce((a, b) => a + b, 0))} commit</Text>
+          <Text as="span">{plural(m.weeklyCommits.reduce((a, b) => a + b, 0), "commit")}</Text>
         </HStack>
       ) : m.pending.includes("weeklyCommits") ? (
         <Pending />
       ) : (
-        <Muted>Tidak tersedia</Muted>
+        <Muted>Not available</Muted>
       ),
   },
   {
     key: "issues",
-    label: "Issue terbuka / tertutup",
+    label: "Open / closed issues",
     source: "Search API: repo:{owner}/{repo} is:issue is:open|closed",
     render: (m) =>
       m.openIssues === null || m.closedIssues === null ? (
-        <Muted>Tidak tersedia</Muted>
+        <Muted>Not available</Muted>
       ) : (
         `${formatNumber(m.openIssues)} / ${formatNumber(m.closedIssues)}`
       ),
   },
   {
     key: "medianClose",
-    label: "Median issue ditutup",
-    source: "Search API: 50 issue tertutup terakhir, closed_at − created_at",
+    label: "Median time to close an issue",
+    source: "Search API: last 50 closed issues, closed_at − created_at",
     render: (m) =>
       m.medianIssueCloseDays === null ? (
-        <Muted>Belum ada data</Muted>
+        <Muted>No data yet</Muted>
       ) : (
         <>
-          {formatDuration(m.medianIssueCloseDays)} <Muted>(dari {m.issueSampleSize} issue)</Muted>
+          {formatDuration(m.medianIssueCloseDays)}{" "}
+          <Muted>(from {plural(m.issueSampleSize, "issue")})</Muted>
         </>
       ),
   },
   {
     key: "contributors",
-    label: "Kontributor aktif 90 hari",
+    label: "Active contributors (90 days)",
     source: "GET /repos/{owner}/{repo}/stats/contributors",
     render: (m) =>
       m.activeContributors90d !== null ? (
-        `${m.activeContributors90d} orang`
+        plural(m.activeContributors90d, "contributor")
       ) : m.pending.includes("activeContributors90d") ? (
         <Pending />
       ) : (
-        <Muted>Tidak tersedia</Muted>
+        <Muted>Not available</Muted>
       ),
   },
   {
@@ -120,7 +121,7 @@ export const METRICS: MetricDef[] = [
   },
   {
     key: "popularity",
-    label: "Star / fork (tidak masuk skor)",
+    label: "Stars / forks (not scored)",
     source: "GET /repos/{owner}/{repo}",
     render: (m) => `${formatNumber(m.stars)} / ${formatNumber(m.forks)}`,
   },

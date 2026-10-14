@@ -8,66 +8,70 @@ export interface ScoreFactor {
   key: "lastCommit" | "issueClose" | "release" | "license";
   label: string;
   weight: number;
-  /** 0–1, atau null kalau datanya tidak ada (faktor tidak ikut dihitung). */
+  /** 0–1, or null when there is no data (the factor is left out). */
   value: number | null;
   reason: string;
 }
 
 export interface HealthReport {
   status: RepoStatus;
-  /** 0–100, null kalau repo diarsipkan atau tidak ada faktor yang bisa dihitung. */
+  /** 0–100, or null when the repo is archived or no factor could be scored. */
   score: number | null;
   factors: ScoreFactor[];
 }
 
 export const STATUS_LABEL: Record<RepoStatus, string> = {
-  active: "Aktif",
-  slowing: "Melambat",
-  inactive: "Tidak aktif",
-  archived: "Diarsipkan",
+  active: "Active",
+  slowing: "Slowing",
+  inactive: "Inactive",
+  archived: "Archived",
 };
 
 function lastCommitFactor(m: RepoMetrics, now: Date, c: ScoreConfig["lastCommit"]): ScoreFactor {
-  const base = { key: "lastCommit", label: "Commit terakhir", weight: c.weight } as const;
-  if (!m.lastCommitAt) return { ...base, value: 0, reason: "Belum ada commit" };
+  const base = { key: "lastCommit", label: "Last commit", weight: c.weight } as const;
+  if (!m.lastCommitAt) return { ...base, value: 0, reason: "No commits yet" };
   const days = daysBetween(m.lastCommitAt, now);
   const value =
     days < c.fullBelowDays ? 1
     : days < c.halfBelowDays ? 0.5
     : days > c.zeroAboveDays ? 0
     : c.betweenValue;
-  return { ...base, value, reason: `Commit terakhir ${formatAgo(days)}` };
+  return { ...base, value, reason: `Last commit ${formatAgo(days)}` };
 }
 
 function issueCloseFactor(m: RepoMetrics, c: ScoreConfig["issueClose"]): ScoreFactor {
-  const base = { key: "issueClose", label: "Median issue ditutup", weight: c.weight } as const;
+  const base = { key: "issueClose", label: "Median time to close an issue", weight: c.weight } as const;
   if (m.medianIssueCloseDays === null) {
-    return { ...base, value: null, reason: "Belum ada issue tertutup untuk diukur" };
+    return { ...base, value: null, reason: "No closed issues to measure yet" };
   }
   const days = m.medianIssueCloseDays;
   const value = days < c.fullBelowDays ? 1 : days < c.halfBelowDays ? 0.5 : 0;
-  return { ...base, value, reason: `Issue rata-rata ditutup dalam ${formatDuration(days)}` };
+  return { ...base, value, reason: `Issues closed in a median of ${formatDuration(days)}` };
 }
 
 function releaseFactor(m: RepoMetrics, now: Date, c: ScoreConfig["release"]): ScoreFactor {
-  const base = { key: "release", label: "Rilis terakhir", weight: c.weight } as const;
-  if (!m.latestRelease) return { ...base, value: 0, reason: "Belum pernah membuat rilis" };
+  const base = { key: "release", label: "Latest release", weight: c.weight } as const;
+  if (!m.latestRelease) return { ...base, value: 0, reason: "Never released" };
   const days = daysBetween(m.latestRelease.publishedAt, now);
   return {
     ...base,
     value: days <= c.fullWithinDays ? 1 : 0,
-    reason: `Rilis ${m.latestRelease.tag} ${formatAgo(days)}`,
+    reason: `Released ${m.latestRelease.tag} ${formatAgo(days)}`,
   };
 }
 
 function licenseFactor(m: RepoMetrics, c: ScoreConfig["license"]): ScoreFactor {
-  const base = { key: "license", label: "Lisensi", weight: c.weight } as const;
+  const base = { key: "license", label: "License", weight: c.weight } as const;
   return m.community.license
-    ? { ...base, value: 1, reason: `Lisensi ${m.community.licenseName ?? "tersedia"}` }
-    : { ...base, value: 0, reason: "Tidak ada lisensi" };
+    ? {
+        ...base,
+        value: 1,
+        reason: m.community.licenseName ? `${m.community.licenseName} license` : "Has a license",
+      }
+    : { ...base, value: 0, reason: "No license" };
 }
 
-/** Hitung skor kesehatan beserta alasannya. Fungsi murni: hasil hanya bergantung pada argumen. */
+/** Compute the health score and its reasons. Pure function: the result depends only on its arguments. */
 export function scoreRepo(
   metrics: RepoMetrics,
   now: Date = new Date(),
@@ -98,11 +102,11 @@ export function scoreRepo(
   return { status, score, factors };
 }
 
-/** Kalimat ringkas, misalnya "Skor 72 — Commit terakhir 3 hari lalu ✓, …". */
+/** One-line summary, e.g. "Score 72 — Last commit 3 days ago ✓, …". */
 export function summarize(report: HealthReport): string {
-  if (report.status === "archived") return "Diarsipkan — repo ini tidak lagi menerima perubahan";
+  if (report.status === "archived") return "Archived — this repo no longer accepts changes";
   const parts = report.factors
     .filter((f) => f.value !== null)
     .map((f) => `${f.reason} ${f.value === 1 ? "✓" : f.value === 0 ? "✗" : "~"}`);
-  return `Skor ${report.score ?? "–"} — ${parts.join(", ")}`;
+  return `Score ${report.score ?? "–"} — ${parts.join(", ")}`;
 }

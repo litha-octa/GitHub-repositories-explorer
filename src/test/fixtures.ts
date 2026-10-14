@@ -6,7 +6,7 @@ export function daysAgo(days: number, from: Date = NOW): string {
   return new Date(from.getTime() - days * 24 * 60 * 60 * 1000).toISOString();
 }
 
-/** Repo sehat: semua faktor bernilai penuh. Timpa field yang ingin diuji. */
+/** A healthy repo: every factor scores full. Override the fields under test. */
 export function makeMetrics(overrides: Partial<RepoMetrics> = {}): RepoMetrics {
   return {
     fullName: "pmndrs/zustand",

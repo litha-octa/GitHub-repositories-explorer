@@ -54,7 +54,7 @@ export function CompareView({ repos, onChange }: Props) {
   const rows: Array<{ label: string; render: (c: Extract<Column, { state: "ready" }>) => ReactNode }> = [
     { label: "Status", render: (c) => <StatusBadge status={c.health.status} /> },
     {
-      label: "Skor",
+      label: "Score",
       render: (c) => (
         <Text fontSize="2xl" fontWeight="bold">
           {c.health.score ?? "–"}
@@ -62,10 +62,10 @@ export function CompareView({ repos, onChange }: Props) {
       ),
     },
     {
-      label: "Alasan skor",
+      label: "Score breakdown",
       render: (c) =>
         c.health.factors.length === 0 ? (
-          <Text color="gray.500">Repo diarsipkan</Text>
+          <Text color="gray.500">Repo is archived</Text>
         ) : (
           <Stack spacing={1}>
             {c.health.factors.map((f) => (
@@ -87,7 +87,7 @@ export function CompareView({ repos, onChange }: Props) {
     <Stack spacing={5}>
       <Flex justify="space-between" align="center" wrap="wrap" gap={3}>
         <Heading as="h2" size="md">
-          Perbandingan {repos.length} library
+          Comparing {repos.length} libraries
         </Heading>
         <ShareButton />
       </Flex>
@@ -117,7 +117,7 @@ export function CompareView({ repos, onChange }: Props) {
                       )}
                     </Box>
                     <IconButton
-                      aria-label={`Hapus ${column.input}`}
+                      aria-label={`Remove ${column.input}`}
                       icon={<SmallCloseIcon />}
                       size="xs"
                       variant="ghost"
@@ -135,7 +135,7 @@ export function CompareView({ repos, onChange }: Props) {
                 {columns.map((column) => (
                   <Td key={column.input} color="red.500">
                     {column.state === "error" &&
-                      (column.error instanceof ApiError ? column.error.message : "Gagal memuat")}
+                      (column.error instanceof ApiError ? column.error.message : "Failed to load")}
                   </Td>
                 ))}
               </Tr>
@@ -159,12 +159,12 @@ export function CompareView({ repos, onChange }: Props) {
       {repos.length < MAX_REPOS && (
         <Box>
           <Text fontWeight="semibold" mb={2}>
-            Tambah library lain (maksimal {MAX_REPOS})
+            Add another library (up to {MAX_REPOS})
           </Text>
           <RepoInput
             key={repos.join(",")}
-            label="Library pembanding"
-            buttonLabel="Tambah"
+            label="Library to compare"
+            buttonLabel="Add"
             onSubmit={(value) => onChange([...repos, value])}
           />
         </Box>
