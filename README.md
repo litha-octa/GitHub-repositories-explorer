@@ -87,3 +87,5 @@ Test memakai Vitest + React Testing Library + MSW: unit test skor dan parser inp
 ## Stack
 
 React 18, TypeScript, Vite, Chakra UI, TanStack Query, Netlify Functions, Vitest, React Testing Library, MSW.
+
+Riwayat perubahan ada di [CHANGELOG.md](CHANGELOG.md).
